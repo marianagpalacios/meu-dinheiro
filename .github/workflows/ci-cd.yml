@@ -1,0 +1,74 @@
+# Pipeline de integração e entrega do MeuDinheiro (responsável: Letícia)
+#
+# Fluxo:
+#   1. testes   -> roda "npm test" (node:test) em todo pull request para a
+#                  main e em todo push na main.
+#   2. build    -> empacota a pasta src/ para o GitHub Pages.
+#                  Só executa se os testes passarem (needs: testes).
+#   3. deploy   -> publica no GitHub Pages. Só executa em push na main e
+#                  somente se o build (e portanto os testes) tiver passado.
+#
+# Se algum teste falhar, os jobs "build" e "deploy" são pulados (skipped)
+# e a versão publicada anteriormente continua no ar: a entrega é bloqueada.
+
+name: CI/CD - testes e deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Evita dois deploys simultâneos na main.
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  testes:
+    name: Testes automatizados
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Executar testes (npm test)
+        run: npm test
+
+  build:
+    name: Empacotar aplicação
+    needs: testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Enviar a pasta src/ como artefato do Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: src
+
+  deploy:
+    name: Publicar no GitHub Pages
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4

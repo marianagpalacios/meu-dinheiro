@@ -116,7 +116,7 @@ meu-dinheiro/
 │   └── .gitkeep
 ├── .github/
 │   └── workflows/
-│       └── .gitkeep
+│       └── ci-cd.yml
 ├── docs/
 │   └── evidencias/
 │       └── .gitkeep
@@ -155,7 +155,24 @@ Evidências de execução em `docs/evidencias/`:
 | `02-testes-falhando-simulacao.txt` | Simulação de falha (saldo calculado com `+` no lugar de `-`): 2 testes falham. |
 | `03-testes-passando-apos-correcao.txt` | Após a correção: 7 testes passando novamente. |
 
-O workflow de CI/CD e a publicação serão implementados pela integrante responsável. As instruções específicas serão adicionadas a este README conforme essa etapa for concluída.
+### Pipeline de CI/CD (responsável: Letícia)
+
+O pipeline está em `.github/workflows/ci-cd.yml` (GitHub Actions) e tem três jobs encadeados:
+
+| Job | Quando roda | O que faz |
+|---|---|---|
+| `testes` | Todo pull request para a `main` e todo push na `main` | Instala o Node.js 22 e executa `npm test`. |
+| `build` | Só se `testes` passar (`needs: testes`) | Empacota a pasta `src/` como artefato do GitHub Pages. |
+| `deploy` | Só em push na `main` e só se `build` passar | Publica o artefato no GitHub Pages. |
+
+**Bloqueio da entrega:** se qualquer teste falhar, o job `testes` termina com erro e os jobs `build` e `deploy` são pulados (*skipped*). Nada é publicado e a versão anterior continua no ar. Em pull requests, a falha também marca o PR com ❌; com a regra de proteção da `main` exigindo o check **Testes automatizados**, o merge fica bloqueado até a correção.
+
+**Configuração necessária no GitHub (uma vez, por quem administra o repositório):**
+
+1. *Settings → Pages → Build and deployment → Source:* **GitHub Actions**.
+2. *Settings → Branches → Add branch ruleset/protection rule* para `main`: marcar **Require a pull request before merging** e **Require status checks to pass**, selecionando o check **Testes automatizados**.
+
+O pipeline também pode ser executado manualmente em *Actions → CI/CD - testes e deploy → Run workflow*.
 
 ## Aplicação publicada
 
