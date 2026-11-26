@@ -1,7 +1,7 @@
 
 # MeuDinheiro
 
-Aplicação web de controle financeiro pessoal desenvolvida para a atividade **Operação Deploy — Do código à produção**, da disciplina de **Gerência de Configuração e Manutenção de Software** da UTFPR, Campus Cornélio Procópio.
+Aplicação web de controle financeiro pessoal desenvolvida para a atividade **Operação Deploy - Do código à produção**, da disciplina de **Gerência de Configuração e Manutenção de Software** da UTFPR, Campus Cornélio Procópio.
 
 O projeto foi utilizado para exercitar desenvolvimento colaborativo, controle de versão, testes automatizados, integração contínua e publicação de uma aplicação estática.
 
